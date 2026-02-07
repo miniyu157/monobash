@@ -9,6 +9,16 @@ A minimalist, single-file Bash framework featuring self-documenting magic and Bu
 
 ![demo](./demo.gif)
 
+## Quick Start
+
+Download and start building your CLI in seconds:
+
+```bash
+curl -o mycli https://raw.githubusercontent.com/miniyu157/monobash/main/monobash
+chmod +x mycli
+./mycli
+```
+
 ## Usage
 
 ```bash
