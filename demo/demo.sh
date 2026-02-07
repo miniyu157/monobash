@@ -193,7 +193,7 @@ main() {
 # $$$
 __greet() {
     local name="${1:-World}"
-    printf "Hello, ${BOLD}%s${COFF}! Welcome to %s.\n" "$name" "$SELF"
+    printf "Hello, ${BOLD}%s${COFF}! This a %s.\n" "$name" "$SELF"
 }
 
 # $$$
