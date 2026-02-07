@@ -180,6 +180,7 @@ main() {
     run_cmd "$CMD" "${cmd_argv[@]}"
 }
 
+
 # $$$
 # ${BOLD}Description:${COFF}
 #   Says hello to someone. A basic example of argument handling.
@@ -194,6 +195,7 @@ __greet() {
     local name="${1:-World}"
     printf "Hello, ${BOLD}%s${COFF}! Welcome to %s.\n" "$name" "$SELF"
 }
+
 # $$$
 # ${BOLD}Description:${COFF}
 #   Simulates a system check with beautiful output.
