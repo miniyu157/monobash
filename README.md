@@ -5,21 +5,33 @@ A minimalist, single-file Bash framework featuring self-documenting magic and Bu
 ![ShellCheck](https://img.shields.io/badge/shellcheck-pass-brightgreen?logo=gnu-bash&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## Preview
+## ✨ Preview
 
-![demo](./demo.gif)
+![demo](./demo/demo.gif)
 
-## Quick Start
+## ⚡ Quick Start
 
-Download and start building your CLI in seconds:
+### 🐣 For Beginners (Demo)
+
+Want to see it in action immediately? Download the pre-configured demo script:
 
 ```bash
-curl -o mycli https://raw.githubusercontent.com/miniyu157/monobash/main/monobash
-chmod +x mycli
-./mycli
+curl -O https://raw.githubusercontent.com/miniyu157/monobash/main/demo/demo.sh
+chmod +x demo.sh
+./demo.sh --help
 ```
 
-## Usage
+### 🛠️ For Developers (Production)
+
+Start your new project with the clean core framework (no demo functions included):
+
+```bash
+curl -o my-tool https://raw.githubusercontent.com/miniyu157/monobash/main/monobash
+chmod +x my-tool
+# Edit 'my-tool' to add your own functions!
+```
+
+## 📖 Usage
 
 ```bash
 Usage:
@@ -41,7 +53,7 @@ Available commands:
     build deploy test (Example commands)
 ```
 
-## Development
+## 💻 Development
 
 Define a function with `__` prefix to create a command.
 Add a `# $$$` comment block to auto-generate its help message.
@@ -68,6 +80,6 @@ Inside the doc block, the following variables are expanded at runtime:
 * `${SELF}`: Script filename
 * `${BOLD}`, `${ULINE}`, `${COFF}`, `${GRAY}`: ANSI formatting codes
 
-## License
+## ⚖️ License
 
 [MIT LICENSE](./LICENSE)
