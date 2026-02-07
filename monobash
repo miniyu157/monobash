@@ -6,15 +6,6 @@ SELF="${SELF_PATH##*/}"
 SELF_DIR="${SELF_PATH%/*}"
 APP_DESC="Description of the application ${SELF}."
 
-# $$$
-# ${BOLD}start neofetch or fastfetch.${COFF}
-# usage: ${CMD}
-# $$$
-# __sysinfo() {
-#     ! command -v neofetch > /dev/null || exec neofetch
-#     ! command -v fastfetch > /dev/null || exec fastfetch
-# }
-
 init_ui() {
     if [[ ! -t 1 ]] && [[ -z $FORCE_COLOR ]]; then
         unset GRAY COFF BOLD ULINE
@@ -144,6 +135,22 @@ EOF
     exit "${1:-0}"
 }
 
+run_cmd() {
+    local cmd="$1"
+    local -a argv=("${@:2}")
+    declare -F -- "__${cmd}" > /dev/null || {
+        printf "%s: unsupported command: '%s'\n" "$SELF" "$cmd" >&2
+        return 1
+    }
+    case "${argv[0]}" in
+        -h | --help)
+            usage_subcmd "$cmd"
+            return $?
+            ;;
+    esac
+    "__${cmd}" "${argv[@]}"
+}
+
 main() {
     init_ui
 
@@ -171,22 +178,6 @@ main() {
 
     [[ -z $CMD ]] && usage_main 0
     run_cmd "$CMD" "${cmd_argv[@]}"
-}
-
-run_cmd() {
-    local cmd="$1"
-    local -a argv=("${@:2}")
-    declare -F -- "__${cmd}" > /dev/null || {
-        printf "%s: unsupported command: '%s'\n" "$SELF" "$cmd" >&2
-        return 1
-    }
-    case "${argv[0]}" in
-        -h | --help)
-            usage_subcmd "$cmd"
-            return $?
-            ;;
-    esac
-    "__${cmd}" "${argv[@]}"
 }
 
 main "$@"
