@@ -84,7 +84,7 @@ $0~"^[[:space:]]*" target "([[:space:]]*\\(|[[:space:]]+)"{
     if(state==2){
 gsub(/\$\{CMD\}/,CMD,doc_buffer); gsub(/\$CMD/,CMD,doc_buffer)
 gsub(/\$\{SELF\}/,SELF,doc_buffer); gsub(/\$SELF/,SELF,doc_buffer)
-gsub(/\$\{SELF_PATH\}/,SELF_PATH,doc_buffer); gsub(/\$SELF_PATH/,SELF,doc_buffer)
+gsub(/\$\{SELF_PATH\}/,SELF_PATH,doc_buffer); gsub(/\$SELF_PATH/,SELF_PATH,doc_buffer)
 gsub(/\$\{SELF_DIR\}/,SELF_DIR,doc_buffer); gsub(/\$SELF_DIR/,SELF_DIR,doc_buffer)
 gsub(/\$\{BOLD\}/,BOLD,doc_buffer); gsub(/\$BOLD/,BOLD,doc_buffer)
 gsub(/\$\{GRAY\}/,GRAY,doc_buffer); gsub(/\$GRAY/,GRAY,doc_buffer)
