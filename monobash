@@ -59,6 +59,7 @@ create_link() {
         printf "%s: no commands available.\n" "$SELF" >&2
         return 1
     }
+    local status=0
     for cmd in "${funcs[@]}"; do
         [[ -z $cmd ]] && continue
         local symlink_path="$symlink_dir/$cmd"
@@ -67,9 +68,11 @@ create_link() {
                 printf "Created symlink: %s\n" "$symlink_path"
             else
                 printf "Failed to create symlink: %s\n" "$symlink_path" >&2
+                status=1
             fi
         }
     done
+    return $status
 }
 
 extract_func_doc() {
