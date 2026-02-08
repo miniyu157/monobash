@@ -1,5 +1,22 @@
 #!/usr/bin/env bash
+
+# demo.sh
+
 set -e
+
+[[ -z ${BASH_SOURCE[0]} ]] && {
+    md=$(
+        curl -fsSL "https://raw.githubusercontent.com/miniyu157/monobash/main/README.md" |
+            grep -n "curl -O https://raw.githubusercontent.com/miniyu157/monobash/main/demo/demo.sh" -C 5
+    )
+    cat << EOF
+Why so lazy? Come on 😅
+---- README.md ----
+${md}
+---- README.md ----
+EOF
+    exit 1
+}
 
 SELF_PATH=$(realpath "${BASH_SOURCE[0]}")
 SELF="${SELF_PATH##*/}"
