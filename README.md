@@ -13,12 +13,13 @@ A minimalist, single-file Bash framework featuring self-documenting magic and Bu
 
 ### 🐣 For Beginners (Demo)
 
-Want to see it in action immediately? Download the pre-configured demo script:
+Witness the framework assemble itself. Download the self-bootstrapping script that dynamically fetches the latest core and fuses it with demo features at runtime.
 
 ```bash
 curl -O https://raw.githubusercontent.com/miniyu157/monobash/main/demo/demo.sh
 chmod +x demo.sh
-./demo.sh --help
+./demo.sh        # 1st run: Bootstraps and assembles the demo
+./demo.sh --help # 2nd run: Explore available commands
 ```
 
 ### 🛠️ For Developers (Production)
