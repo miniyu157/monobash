@@ -119,18 +119,18 @@ ${BOLD}${ULINE}Usage:${COFF}
   COMMAND [options...]
 
 ${BOLD}${ULINE}Options:${COFF}
-  -h --help           Show help information for the specified command
+  -h, --help         Show help information for the specified command
 
 ${BOLD}${ULINE}When using ${SELF} directly as COMMAND:${COFF}
   Usage: ${SELF} <options> [arguments...]
   Options:
-    -h --help         Show this help message
-    -l --list         List all available commands
-    -L --link [DIR=${GRAY}Directory where ${SELF} resides${COFF}]
-        Create symlinks for all commands
+    -h, --help         Show this help message
+    -l, --list         List all available commands
+    -L, --link [DIR]   Create symlinks in DIR
+               (default: directory of ${SELF})
 
 ${BOLD}${ULINE}Available commands:${COFF}
-  ${funcs[*]:-  (No commands available)}
+    ${funcs[*]:-  (No commands available)}
 EOF
     exit "${1:-0}"
 }
