@@ -34,21 +34,24 @@ chmod +x my-tool
 
 ## 📖 Usage
 
-```bash
+```console
+> ./monobash --help
+Description of the application monobash.
+
 Usage:
   monobash COMMAND [options...]
   COMMAND [options...]
 
 Options:
-  -h --help           Show help information for the specified command
+  -h, --help         Show help information for the specified command
 
 When using monobash directly as COMMAND:
   Usage: monobash <options> [arguments...]
   Options:
-    -h --help         Show this help message
-    -l --list         List all available commands
-    -L --link [DIR=Directory where monobash resides]
-        Create symlinks for all commands
+    -h, --help         Show this help message
+    -l, --list         List all available commands
+    -L, --link [DIR]   Create symlinks in DIR
+               (default: directory of monobash)
 
 Available commands:
     build deploy test (Example commands)
