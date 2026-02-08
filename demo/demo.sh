@@ -1,228 +1,30 @@
 #!/usr/bin/env bash
+set -e
 
-CMD=""
 SELF_PATH=$(realpath "${BASH_SOURCE[0]}")
 SELF="${SELF_PATH##*/}"
-SELF_DIR="${SELF_PATH%/*}"
-APP_DESC="Description of the application ${SELF}."
+SELF_DIR="${SELF_PATH%/*}" SELF_DIR="${SELF_DIR:-/}"
 
-init_ui() {
-    if [[ ! -t 1 ]] && [[ -z $FORCE_COLOR ]]; then
-        unset GRAY COFF BOLD ULINE
-        return
-    fi
+printf "Fetching monobash from github.com/miniyu157/monobash ...\n"
+core=$(curl -fsSL "https://raw.githubusercontent.com/miniyu157/monobash/main/monobash")
 
-    if command -v tput > /dev/null 2>&1 && tput sgr0 > /dev/null 2>&1; then
-        GRAY=$(tput setaf 8 2> /dev/null || tput setaf 7)
-        BOLD=$(tput bold)
-        ULINE=$(tput smul)
-        COFF=$(tput sgr0)
-    else
-        GRAY=$'\e[38;5;243m'
-        BOLD=$'\e[1m'
-        ULINE=$'\e[4m'
-        COFF=$'\e[0m'
-    fi
+printf "Fetching demo/demo.patch from github.com/miniyu157/monobash ...\n"
+patch=$(curl -fsSL "https://raw.githubusercontent.com/miniyu157/monobash/main/demo/demo.patch.sh")
 
-    readonly GRAY BOLD ULINE COFF
-}
+last_line=$(tail -n 1 <<< "$core")
+tmp_file="$SELF_DIR/_tmp_demo_$RANDOM.sh"
+{
+    head -n -1 <<< "$core"
+    printf "\n"
+    printf "%s\n" "$patch"
+    printf "\n"
+    printf '%s\n' "$last_line"
+} > "$tmp_file"
 
-get_funcs() {
-    while read -r _ _ name; do
-        [[ $name == __* ]] || continue
-        clean=${name#__}
-        __funcs+=("$clean")
-    done < <(declare -F)
-    printf "%s\n" "${__funcs[@]}"
-    return
-}
+printf "\n"
+printf "Welcome to MonoBash!\n"
+printf "The demo is ready. Re-run './%s' to see it in action.\n" "$SELF"
+printf "You can also open this file in an editor to see how it works.\n"
 
-create_link() {
-    local -a funcs
-    local symlink_dir="${1:-$SELF_DIR}"
-    mapfile -t funcs < <(get_funcs)
-
-    [[ -x $SELF_PATH ]] || {
-        printf "%s: executable not found: %s\n" "$SELF" "$SELF_PATH" >&2
-        return 1
-    }
-    [[ -z ${funcs[0]} ]] && {
-        printf "%s: no commands available.\n" "$SELF" >&2
-        return 1
-    }
-    local status=0
-    for cmd in "${funcs[@]}"; do
-        [[ -z $cmd ]] && continue
-        local symlink_path="$symlink_dir/$cmd"
-        [[ -L $symlink_path && -e $symlink_path ]] || {
-            if ln -sf "$SELF_PATH" "$symlink_path"; then
-                printf "Created symlink: %s\n" "$symlink_path"
-            else
-                printf "Failed to create symlink: %s\n" "$symlink_path" >&2
-                status=1
-            fi
-        }
-    done
-    return $status
-}
-
-extract_func_doc() {
-    local cmd="$1"
-    local func_name="__${cmd}"
-    local script_path="$SELF_PATH"
-
-    awk -v target="$func_name" -v CMD="$cmd" \
-        -v SELF="$SELF" -v SELF_PATH="$SELF_PATH" -v SELF_DIR="$SELF_DIR" \
-        -v GRAY="$GRAY" -v BOLD="$BOLD" -v ULINE="$ULINE" -v COFF="$COFF" '
-BEGIN{state=0;doc_buffer="";found=0}
-/^# ?\$\$\$/{if(state==0){state=1;doc_buffer="";next}
-             if(state==1){state=2;next}}
-state==1{
-    sub(/^#[[:space:]]?/,"")
-    doc_buffer = doc_buffer $0 "\n"}
-$0~"^[[:space:]]*" target "([[:space:]]*\\(|[[:space:]]+)"{
-    if(state==2){
-gsub(/\$\{CMD\}/,CMD,doc_buffer); gsub(/\$CMD/,CMD,doc_buffer)
-gsub(/\$\{SELF\}/,SELF,doc_buffer); gsub(/\$SELF/,SELF,doc_buffer)
-gsub(/\$\{SELF_PATH\}/,SELF_PATH,doc_buffer); gsub(/\$SELF_PATH/,SELF_PATH,doc_buffer)
-gsub(/\$\{SELF_DIR\}/,SELF_DIR,doc_buffer); gsub(/\$SELF_DIR/,SELF_DIR,doc_buffer)
-gsub(/\$\{BOLD\}/,BOLD,doc_buffer); gsub(/\$BOLD/,BOLD,doc_buffer)
-gsub(/\$\{GRAY\}/,GRAY,doc_buffer); gsub(/\$GRAY/,GRAY,doc_buffer)
-gsub(/\$\{ULINE\}/,ULINE,doc_buffer); gsub(/\$ULINE/,ULINE,doc_buffer)
-gsub(/\$\{COFF\}/,COFF,doc_buffer); gsub(/\$COFF/,COFF,doc_buffer)
-        printf "%s",doc_buffer; found=1; exit
-    }state=0}
-state==2 && !/^[[:space:]]*$/ && !($0~"^#"){ state=0 }
-END{ if(found!=1) exit 1 }
-' "$script_path"
-}
-
-usage_subcmd() {
-    local cmd="$1"
-    local desc
-    if ! desc=$(extract_func_doc "$cmd"); then
-        printf "%s: no help available for '%s'\n" "$SELF" "$cmd" >&2
-        return 1
-    fi
-    printf "%s\n" "$desc"
-}
-
-usage_main() {
-    local -a funcs
-    mapfile -t funcs < <(get_funcs)
-
-    cat << EOF
-${BOLD}${APP_DESC}${COFF}
-
-${BOLD}${ULINE}Usage:${COFF}
-  ${SELF} COMMAND [options...]
-  COMMAND [options...]
-
-${BOLD}${ULINE}Options:${COFF}
-  -h --help           Show help information for the specified command
-
-${BOLD}${ULINE}When using ${SELF} directly as COMMAND:${COFF}
-  Usage: ${SELF} <options> [arguments...]
-  Options:
-    -h --help         Show this help message
-    -l --list         List all available commands
-    -L --link [DIR=${GRAY}Directory where ${SELF} resides${COFF}]
-        Create symlinks for all commands
-
-${BOLD}${ULINE}Available commands:${COFF}
-  ${funcs[*]:-  (No commands available)}
-EOF
-    exit "${1:-0}"
-}
-
-run_cmd() {
-    local cmd="$1"
-    local -a argv=("${@:2}")
-    declare -F -- "__${cmd}" > /dev/null || {
-        printf "%s: unsupported command: '%s'\n" "$SELF" "$cmd" >&2
-        return 1
-    }
-    case "${argv[0]}" in
-        -h | --help)
-            usage_subcmd "$cmd"
-            return $?
-            ;;
-    esac
-    "__${cmd}" "${argv[@]}"
-}
-
-main() {
-    init_ui
-
-    local -a cmd_argv
-    if [[ ${0##*/} == "$SELF" ]]; then
-        CMD="$1"
-        cmd_argv=("${@:2}")
-        case "${CMD}" in
-            -h | --help)
-                usage_main 0
-                ;;
-            -l | --list)
-                get_funcs
-                exit $?
-                ;;
-            -L | --link)
-                create_link "${cmd_argv[@]}"
-                exit $?
-                ;;
-        esac
-    else
-        CMD="${0##*/}"
-        cmd_argv=("$@")
-    fi
-
-    [[ -z $CMD ]] && usage_main 0
-    run_cmd "$CMD" "${cmd_argv[@]}"
-}
-
-
-# $$$
-# ${BOLD}Description:${COFF}
-#   Says hello to someone. A basic example of argument handling.
-#
-# ${BOLD}Usage:${COFF}
-#   ${SELF} ${CMD} [name]
-#
-# ${BOLD}Arguments:${COFF}
-#   name    The person to greet (default: World)
-# $$$
-__greet() {
-    local name="${1:-World}"
-    printf "Hello, ${BOLD}%s${COFF}! This a %s.\n" "$name" "$SELF"
-}
-
-# $$$
-# ${BOLD}Description:${COFF}
-#   Simulates a system check with beautiful output.
-#   Demonstrates the UI colors and formatting variables.
-# $$$
-__check() {
-    printf "${BOLD}Starting system check...${COFF}\n"
-
-    printf "  [${GRAY}....${COFF}] Database connection"
-    sleep 0.5
-    printf "\r  [${BOLD} OK ${COFF}] Database connection\n"
-
-    printf "  [${GRAY}....${COFF}] API latency"
-    sleep 0.5
-    printf "\r  [${BOLD} OK ${COFF}] API latency (24ms)\n"
-
-    printf "\n${BOLD}All systems go!${COFF}\n"
-}
-
-# $$$
-# ${BOLD}Description:${COFF}
-#   Prints the current user and script execution path.
-# $$$
-__info() {
-    echo "User: $(whoami)"
-    echo "Path: $SELF_PATH"
-    echo "Mode: $([[ ${0##*/} == "$SELF" ]] && echo "Script" || echo "Symlink")"
-}
-
-main "$@"
+chmod +x "$tmp_file"
+mv "$tmp_file" "$SELF_PATH"
