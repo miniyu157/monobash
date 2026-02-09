@@ -3,7 +3,7 @@
 CMD=""
 SELF_PATH=$(realpath "${BASH_SOURCE[0]}")
 SELF="${SELF_PATH##*/}"
-SELF_DIR="${SELF_PATH%/*}"
+SELF_DIR="${SELF_PATH%/*}" SELF_DIR="${SELF_DIR:-/}"
 APP_DESC="Description of the application ${SELF}."
 
 init_ui() {
@@ -28,12 +28,14 @@ init_ui() {
 }
 
 get_funcs() {
+    local -a funcs=()
+    local name
     while read -r _ _ name; do
         [[ $name == __* ]] || continue
         clean=${name#__}
-        __funcs+=("$clean")
+        funcs+=("$clean")
     done < <(declare -F)
-    printf "%s\n" "${__funcs[@]}"
+    printf "%s\n" "${funcs[@]}"
     return
 }
 
