@@ -15,6 +15,7 @@ done
 
 vhs << 'EOF'
 Output demo.gif
+Set Theme "Catppuccin Mocha"
 Set FontSize 24
 Set FontFamily "IosevkaTermSlab NF Obl"
 Set Width 1000
@@ -64,7 +65,7 @@ Sleep 0.5s
 Enter
 Sleep 0.5s
 
-Type "./greet '<Welcome to MonoBash!>'"
+Type "./info"
 Sleep 0.5s
 Enter
 Sleep 3s
