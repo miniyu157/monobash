@@ -4,12 +4,14 @@
 # @off
 
 SELF_PATH=$(realpath "${BASH_SOURCE[0]}")
-SELF="${SELF_PATH##*/}"
 SELF_DIR="${SELF_PATH%/*}" SELF_DIR="${SELF_DIR:-/}"
-APP_DESC="Description of the application ${SELF}."
+SELF="${SELF_PATH##*/}"
 IS_APPLET=0
 [[ ${0##*/} != "$SELF" ]] && IS_APPLET=1
 readonly IS_APPLET
+declare -gA UI_VARS
+
+APP_DESC="Description of the application ${SELF}."
 
 init_ui() {
     [[ ! -t 1 && -z $FORCE_COLOR ]] && return
@@ -17,9 +19,12 @@ init_ui() {
     while read -r line; do
         [[ $line == "# @off"* ]] && return
         [[ $line == "# @ui "* ]] && for pair in ${line#\# @ui }; do
-            declare -gr "${pair%%=*}=$ansi_header${pair#*=}"
+            key="${pair%%=*}" val="${pair#*=}"
+            declare -gr "${key}=${ansi_header}${val}"
+            UI_VARS["$key"]="${ansi_header}${val}"
         done
     done < "$SELF_PATH"
+    declare -grA UI_VARS
 }
 
 get_funcs() {
@@ -64,34 +69,33 @@ create_link() {
 }
 
 extract_func_doc() {
-    local cmd="$1"
-    local func_name="__${cmd}"
-    local script_path="$SELF_PATH"
-
-    awk -v target="$func_name" -v CMD="$cmd" \
-        -v SELF="$SELF" -v SELF_PATH="$SELF_PATH" -v SELF_DIR="$SELF_DIR" \
-        -v GRAY="$GRAY" -v BOLD="$BOLD" -v ULINE="$ULINE" -v COFF="$COFF" '
-BEGIN{state=0;doc_buffer="";found=0}
-/^# ?\$\$\$/{if(state==0){state=1;doc_buffer="";next}
-             if(state==1){state=2;next}}
-state==1{
-    sub(/^#[[:space:]]?/,"")
-    doc_buffer = doc_buffer $0 "\n"}
-$0~"^[[:space:]]*" target "([[:space:]]*\\(|[[:space:]]+)"{
-    if(state==2){
-gsub(/\$\{CMD\}/,CMD,doc_buffer); gsub(/\$CMD/,CMD,doc_buffer)
-gsub(/\$\{SELF\}/,SELF,doc_buffer); gsub(/\$SELF/,SELF,doc_buffer)
-gsub(/\$\{SELF_PATH\}/,SELF_PATH,doc_buffer); gsub(/\$SELF_PATH/,SELF_PATH,doc_buffer)
-gsub(/\$\{SELF_DIR\}/,SELF_DIR,doc_buffer); gsub(/\$SELF_DIR/,SELF_DIR,doc_buffer)
-gsub(/\$\{BOLD\}/,BOLD,doc_buffer); gsub(/\$BOLD/,BOLD,doc_buffer)
-gsub(/\$\{GRAY\}/,GRAY,doc_buffer); gsub(/\$GRAY/,GRAY,doc_buffer)
-gsub(/\$\{ULINE\}/,ULINE,doc_buffer); gsub(/\$ULINE/,ULINE,doc_buffer)
-gsub(/\$\{COFF\}/,COFF,doc_buffer); gsub(/\$COFF/,COFF,doc_buffer)
-        printf "%s",doc_buffer; found=1; exit
-    }state=0}
-state==2 && !/^[[:space:]]*$/ && !($0~"^#"){ state=0 }
-END{ if(found!=1) exit 1 }
-' "$script_path"
+    local -x CMD="$1" func_name="__${1}"
+    local vars=("CMD" "SELF" "SELF_PATH" "SELF_DIR")
+    local export_vars=("${vars[@]}" "${!UI_VARS[@]}")
+    (
+        export "${export_vars[@]}"
+        awk -v target="$func_name" -v var_list="${export_vars[*]}" '
+BEGIN { n = split(var_list, keys, " "); state = 0; doc_buffer = "" }
+/^# ?\$\$\$/ {
+    if (state == 0) { state = 1; doc_buffer = ""; next }
+    if (state == 1) { state = 2; next }}
+state == 1 { sub(/^#[[:space:]]?/, ""); doc_buffer = doc_buffer $0 "\n" }
+$0 ~ "^[[:space:]]*" target "([[:space:]]*\\(|[[:space:]]+)" {
+    if (state == 2) {
+        for (i = 1; i <= n; i++) {
+            key = keys[i];val = ENVIRON[key]
+            if (key == "" || val == "") continue
+            gsub("\\$\\{" key "\\}", val, doc_buffer)
+            gsub("\\$" key, val, doc_buffer)
+        }
+        printf "%s", doc_buffer; exit 0
+    }
+    state = 0
+}
+state == 2 && !/^[[:space:]]*$/ && !($0 ~ "^#") { state = 0 }
+END { exit (state == 2 ? 0 : 1) }
+        ' "$SELF_PATH"
+    )
 }
 
 usage_subcmd() {
