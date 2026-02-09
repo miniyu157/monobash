@@ -5,6 +5,14 @@ A minimalist, single-file Bash framework featuring self-documenting magic and Bu
 ![ShellCheck](https://img.shields.io/badge/shellcheck-pass-brightgreen?logo=gnu-bash&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
+## ✨ Features
+
+* **Zero Dependency**: Runs anywhere with just Bash.
+* **Multicall Binary**: Acts like BusyBox. One script, multiple commands via symlinks.
+* **Self-Documenting**: Parses subcommand documentation directly from comments via an Awk magic state machine.
+* **Declarative UI**: Define ANSI colors and styles via simple header tags.
+* **Auto-Dispatch**: Just write a __func, and it automatically dispatches subcommands.
+
 ## ✨ Preview
 
 ![demo](./demo/demo.gif)
@@ -24,7 +32,7 @@ chmod +x demo.sh
 
 ### 🛠️ For Developers (Production)
 
-Start your new project with the clean core framework (no demo functions included):
+Start your new project with the clean core framework:
 
 ```bash
 curl -o my-tool https://raw.githubusercontent.com/miniyu157/monobash/main/monobash
@@ -59,30 +67,60 @@ Available commands:
 
 ## 💻 Development
 
-Define a function with `__` prefix to create a command.
-Add a `# $$$` comment block to auto-generate its help message.
+### 1. Define Commands
+
+Create a function with a `__` prefix. It automatically becomes a subcommand.
+
+### 2. Write Documentation
+
+Add a `# $$$` comment block. It is parsed at runtime to generate help text.
+
+### 3. Configure UI
+
+Define global ANSI styles using `# @ui` tags at the top of the script.
+
+The `\e[` escape sequence is automatically prepended.
+
+Use `# @off` to stop scanning early and avoid unnecessary overhead.
+
+**Example:**
 
 ```bash
+#!/usr/bin/env bash
+# @ui ERROR=31;1m SUCCESS=32;1m foo=bar
+# @ui RESET=0m
+# @off
+
+# ... (The Core of monobash) ...
+
 # $$$
-# Build the artifact.
+# Deploy the application to production.
 #
 # Usage:
 #   ${CMD} [options]
 #
 # Options:
-#   -v, --verbose    Enable verbose output
+#   -f, --force      Force deployment
+#
+# returns: ${SUCCESS}0${COFF} on success, ${ERROR}1${COFF} on error.
 # $$$
-__build() {
-    echo "Building project..."
+__deploy() {
+    echo "Deploying..."
 }
 ```
 
-**Documentation Variables**
-Inside the doc block, the following variables are expanded at runtime:
+**Variable Expansion**: Inside the doc block, the following variables are expanded at runtime:
 
-* `${CMD}`: Current command name
-* `${SELF}`: Script filename
-* `${BOLD}`, `${ULINE}`, `${COFF}`, `${GRAY}`: ANSI formatting codes
+* `${CMD}`: Current subcommand name.
+* `${SELF}`: Script filename.
+* `${SELF_PATH}`: Absolute path to the script.
+* `${SELF_DIR}`: Directory containing the script.
+* `${VAR}`: Any variable defined in # @ui tags.
+
+**Additional Variables**: You can access these globals anywhere in your functions:
+
+* `IS_APPLET`: 1 if run via symlink 0 otherwise.
+* `UI_VARS`: An associative array containing all parsed @ui styles (e.g., ${UI_VARS[FOO]} ${!UI_VARS[*]}).
 
 ## ⚖️ License
 
