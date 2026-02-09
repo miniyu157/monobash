@@ -37,7 +37,10 @@ __check() {
 #   Prints the current user and script execution path.
 # $$$
 __info() {
-    echo "User: $(whoami)"
-    echo "Path: $SELF_PATH"
-    echo "Mode: $([[ ${0##*/} == "$SELF" ]] && echo "Script" || echo "Symlink")"
+    printf "CMD: %s\n" "$CMD"
+    printf "SELF: %s\n" "$SELF"
+    printf "SELF_PATH: %s\n" "$SELF_PATH"
+    printf "SELF_DIR: %s\n" "$SELF_DIR"
+    printf "IS_APPLET: %s (%s)\n" "$IS_APPLET" \
+        "$([[ $IS_APPLET -eq 1 ]] && echo Symlink || echo Script)"
 }
