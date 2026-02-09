@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# @ui COFF=0m BOLD=1m ULINE=4m GRAY=38;5;243m
+# @off
+
 CMD=""
 SELF_PATH=$(realpath "${BASH_SOURCE[0]}")
 SELF="${SELF_PATH##*/}"
@@ -10,24 +13,14 @@ IS_APPLET=0
 readonly IS_APPLET
 
 init_ui() {
-    if [[ ! -t 1 ]] && [[ -z $FORCE_COLOR ]]; then
-        unset GRAY COFF BOLD ULINE
-        return
-    fi
-
-    if command -v tput > /dev/null 2>&1 && tput sgr0 > /dev/null 2>&1; then
-        GRAY=$(tput setaf 8 2> /dev/null || tput setaf 7)
-        BOLD=$(tput bold)
-        ULINE=$(tput smul)
-        COFF=$(tput sgr0)
-    else
-        GRAY=$'\e[38;5;243m'
-        BOLD=$'\e[1m'
-        ULINE=$'\e[4m'
-        COFF=$'\e[0m'
-    fi
-
-    readonly GRAY BOLD ULINE COFF
+    [[ ! -t 1 && -z $FORCE_COLOR ]] && return
+    local line pair ansi_header=$'\e['
+    while read -r line; do
+        [[ $line == "# @off"* ]] && return
+        [[ $line == "# @ui "* ]] && for pair in ${line#\# @ui }; do
+            declare -gr "${pair%%=*}=$ansi_header${pair#*=}"
+        done
+    done < "$SELF_PATH"
 }
 
 get_funcs() {
