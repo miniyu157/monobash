@@ -3,7 +3,6 @@
 # @ui COFF=0m BOLD=1m ULINE=4m GRAY=38;5;243m
 # @off
 
-CMD=""
 SELF_PATH=$(realpath "${BASH_SOURCE[0]}")
 SELF="${SELF_PATH##*/}"
 SELF_DIR="${SELF_PATH%/*}" SELF_DIR="${SELF_DIR:-/}"
@@ -25,7 +24,7 @@ init_ui() {
 
 get_funcs() {
     local -a funcs=()
-    local name
+    local name clean
     while read -r _ _ name; do
         [[ $name == __* ]] || continue
         clean=${name#__}
@@ -48,7 +47,7 @@ create_link() {
         printf "%s: no commands available.\n" "$SELF" >&2
         return 1
     }
-    local status=0
+    local status=0 cmd
     for cmd in "${funcs[@]}"; do
         [[ -z $cmd ]] && continue
         local symlink_path="$symlink_dir/$cmd"
@@ -146,7 +145,7 @@ run_cmd() {
             return $?
             ;;
     esac
-    "__${cmd}" "${argv[@]}"
+    CMD="$cmd" "__${cmd}" "${argv[@]}"
 }
 
 main() {
@@ -154,9 +153,9 @@ main() {
 
     local -a cmd_argv
     if [[ ${0##*/} == "$SELF" ]]; then
-        CMD="$1"
+        local cmd="$1"
         cmd_argv=("${@:2}")
-        case "${CMD}" in
+        case "${cmd}" in
             -h | --help)
                 usage_main 0
                 ;;
@@ -170,12 +169,12 @@ main() {
                 ;;
         esac
     else
-        CMD="${0##*/}"
+        cmd="${0##*/}"
         cmd_argv=("$@")
     fi
 
-    [[ -z $CMD ]] && usage_main 0
-    run_cmd "$CMD" "${cmd_argv[@]}"
+    [[ -z $cmd ]] && usage_main 0
+    run_cmd "$cmd" "${cmd_argv[@]}"
 }
 
 main "$@"
