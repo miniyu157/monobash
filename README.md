@@ -11,7 +11,8 @@ A minimalist, single-file Bash framework featuring self-documenting magic and Bu
 * **Multicall Binary**: Acts like BusyBox. One script, multiple commands via symlinks.
 * **Self-Documenting**: Parses subcommand documentation directly from comments via an Awk magic state machine.
 * **Declarative UI**: Define ANSI colors and styles via simple header tags.
-* **Auto-Dispatch**: Just write a __func, and it automatically dispatches subcommands.
+* **Auto-Dispatch**: Just write a  **__func**, and it automatically dispatches subcommands.
+* **Ultra Lightweight**: The core framework is under **200** lines of code.
 
 ## ✨ Preview
 
