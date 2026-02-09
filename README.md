@@ -2,8 +2,13 @@
 
 A minimalist, single-file Bash framework featuring self-documenting magic and BusyBox-style multicall architecture.
 
+![GitHub last commit](https://img.shields.io/github/last-commit/miniyu157/monobash?logo=git)
 ![ShellCheck](https://img.shields.io/badge/shellcheck-pass-brightgreen?logo=gnu-bash&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+Witness the monobash magic in motion.
+
+![demo](./demo/demo.gif)
 
 ## ✨ Features
 
@@ -13,10 +18,6 @@ A minimalist, single-file Bash framework featuring self-documenting magic and Bu
 * **Declarative UI**: Define ANSI colors and styles via simple header tags.
 * **Auto-Dispatch**: Just write a  **__func**, and it automatically dispatches subcommands.
 * **Ultra Lightweight**: The core framework is under **200** lines of code.
-
-## ✨ Preview
-
-![demo](./demo/demo.gif)
 
 ## ⚡ Quick Start
 
