@@ -5,6 +5,9 @@ SELF_PATH=$(realpath "${BASH_SOURCE[0]}")
 SELF="${SELF_PATH##*/}"
 SELF_DIR="${SELF_PATH%/*}" SELF_DIR="${SELF_DIR:-/}"
 APP_DESC="Description of the application ${SELF}."
+IS_APPLET=0
+[[ ${0##*/} != "$SELF" ]] && IS_APPLET=1
+readonly IS_APPLET
 
 init_ui() {
     if [[ ! -t 1 ]] && [[ -z $FORCE_COLOR ]]; then
