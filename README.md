@@ -73,6 +73,9 @@ Available commands:
 
 Create a function with a `__` prefix. It automatically becomes a subcommand.
 
+> [!NOTE]
+> **Note**: For internal subcommand orchestration, prefer `run_cmd <command> [args...]` over calling `__func` directly. This ensures the `CMD` and `args` contexts are correctly synchronized for help generation and argument handling.
+
 ### 2. Write Documentation
 
 Add a `# $$$` comment block. It is parsed at runtime to generate help text.
@@ -123,6 +126,8 @@ __deploy() {
 
 * `IS_APPLET`: 1 if run via symlink 0 otherwise.
 * `UI_VARS`: An associative array containing all parsed @ui styles (e.g., ${UI_VARS[FOO]} ${!UI_VARS[*]}).
+* `CMD`: The name of the currently executing subcommand.
+* `args`: An array containing the arguments passed to the subcommand (e.g., `${args[@]}`).
 
 ## ⚖️ License
 
