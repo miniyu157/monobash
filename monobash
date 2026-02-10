@@ -99,7 +99,7 @@ END { exit (state == 2 ? 0 : 1) }
 }
 
 usage_subcmd() {
-    local cmd="$1"
+    local cmd="${1:-$CMD}"
     local desc
     if ! desc=$(extract_func_doc "$cmd"); then
         printf "%s: no help available for '%s'\n" "$SELF" "$cmd" >&2
@@ -137,29 +137,29 @@ EOF
 }
 
 run_cmd() {
-    local cmd="$1"
-    local -a argv=("${@:2}")
-    declare -F -- "__${cmd}" > /dev/null || {
-        printf "%s: unsupported command: '%s'\n" "$SELF" "$cmd" >&2
+    local CMD="$1"
+    local -a args=("${@:2}")
+    declare -F -- "__${CMD}" > /dev/null || {
+        printf "%s: unsupported command: '%s'\n" "$SELF" "$CMD" >&2
         return 1
     }
-    case "${argv[0]}" in
+    case "${args[0]}" in
         -h | --help)
-            usage_subcmd "$cmd"
+            usage_subcmd
             return $?
             ;;
     esac
-    CMD="$cmd" "__${cmd}" "${argv[@]}"
+    "__${CMD}" "${args[@]}"
 }
 
 main() {
     init_ui
 
-    local -a cmd_argv
+    local -a args
     if [[ ${0##*/} == "$SELF" ]]; then
-        local cmd="$1"
-        cmd_argv=("${@:2}")
-        case "${cmd}" in
+        local CMD="$1"
+        args=("${@:2}")
+        case "${CMD}" in
             -h | --help)
                 usage_main 0
                 ;;
@@ -168,17 +168,17 @@ main() {
                 exit $?
                 ;;
             -L | --link)
-                create_link "${cmd_argv[@]}"
+                create_link "${args[@]}"
                 exit $?
                 ;;
         esac
     else
-        cmd="${0##*/}"
-        cmd_argv=("$@")
+        local CMD="${0##*/}"
+        args=("$@")
     fi
 
-    [[ -z $cmd ]] && usage_main 0
-    run_cmd "$cmd" "${cmd_argv[@]}"
+    [[ -z $CMD ]] && usage_main 0
+    run_cmd "$CMD" "${args[@]}"
 }
 
 main "$@"
