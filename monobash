@@ -131,7 +131,7 @@ EOF
 run_cmd() {
     local CMD="$1"
     local -a args=("${@:2}")
-    compgen -A function -- "__${CMD}" > /dev/null || {
+    declare -F -- "__${CMD}" > /dev/null || {
         printf "%s: unsupported command: '%s'\n" "$SELF" "$CMD" >&2
         return 1
     }
