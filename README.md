@@ -64,9 +64,8 @@ When using monobash directly as COMMAND:
 
 Functions prefixed with `__` become subcommands.
 
-> When calling another subcommand, always use  
-> `run_cmd <command> [args...]`  
-> so that `CMD` and `args` are updated correctly.
+> For internal calls, directly invoke `__<command> "$@"`.
+> Only use `run_cmd <command> "$@"` when you explicitly need to update the global `CMD` context.
 
 ### 2. Write Documentation
 
@@ -139,7 +138,6 @@ You can access these globals anywhere in your functions:
 * `IS_APPLET`: 1 if run via symlink 0 otherwise.
 * `UI_VARS`: An associative array containing all parsed @ui styles (e.g., `${UI_VARS[FOO]}` `${!UI_VARS[*]}`).
 * `CMD`: The name of the currently executing subcommand.
-* `args`: An array containing the arguments passed to the subcommand (e.g., `${args[@]}`).
 
 ## License
 
