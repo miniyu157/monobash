@@ -130,45 +130,39 @@ EOF
 
 run_cmd() {
     local CMD="$1"
-    local -a args=("${@:2}")
+    shift 1
     declare -F -- "__${CMD}" > /dev/null || {
         printf "%s: unsupported command: '%s'\n" "$SELF" "$CMD" >&2
         return 1
     }
-    [[ ${args[0]} == "--help" || ${args[0]} == "-h" ]] && {
+    [[ $1 == "--help" || $1 == "-h" ]] && {
         usage_subcmd
         return $?
     }
-    "__${CMD}" "${args[@]}"
+    "__${CMD}" "$@"
 }
 
 main() {
     init_ui
-
-    local -a args
     if [[ ${0##*/} == "$SELF" ]]; then
         local CMD="$1"
-        args=("${@:2}")
+        shift
         case "${CMD}" in
-            -h | --help)
-                usage_main 0
-                ;;
+            -h | --help) usage_main 0 ;;
             -l | --list)
                 get_funcs
                 exit $?
                 ;;
             -L | --link)
-                create_link "${args[@]}"
+                create_link "$@"
                 exit $?
                 ;;
         esac
     else
         local CMD="${0##*/}"
-        args=("$@")
     fi
-
     [[ -z $CMD ]] && usage_main 0
-    run_cmd "$CMD" "${args[@]}"
+    run_cmd "$CMD" "$@"
 }
 
 main "$@"
