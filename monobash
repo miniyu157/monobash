@@ -29,14 +29,11 @@ init_ui() {
 
 get_funcs() {
     local -a funcs=()
-    local name clean
-    while read -r _ _ name; do
-        [[ $name == __* ]] || continue
-        clean=${name#__}
-        funcs+=("$clean")
-    done < <(declare -F)
+    local f
+    while read -r f; do
+        funcs+=("${f#__}")
+    done < <(compgen -A function -- __)
     printf "%s\n" "${funcs[@]}"
-    return
 }
 
 create_link() {
@@ -139,16 +136,14 @@ EOF
 run_cmd() {
     local CMD="$1"
     local -a args=("${@:2}")
-    declare -F -- "__${CMD}" > /dev/null || {
+    compgen -A function -- "__${CMD}" > /dev/null || {
         printf "%s: unsupported command: '%s'\n" "$SELF" "$CMD" >&2
         return 1
     }
-    case "${args[0]}" in
-        -h | --help)
-            usage_subcmd
-            return $?
-            ;;
-    esac
+    [[ ${args[0]} == "--help" || ${args[0]} == "-h" ]] && {
+        usage_subcmd
+        return $?
+    }
     "__${CMD}" "${args[@]}"
 }
 
