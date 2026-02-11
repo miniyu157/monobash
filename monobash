@@ -3,28 +3,23 @@
 # @ui COFF=0m BOLD=1m FAINT=2m ITALIC=3m ULINE=4m INVERT=7m HIDE=8m DLINE=9m
 # @off
 
-SELF_PATH=$(realpath "${BASH_SOURCE[0]}")
+SELF_PATH=$(realpath "${BASH_SOURCE[0]}") SELF="${SELF_PATH##*/}"
 SELF_DIR="${SELF_PATH%/*}" SELF_DIR="${SELF_DIR:-/}"
-SELF="${SELF_PATH##*/}"
-IS_APPLET=0
-[[ ${0##*/} != "$SELF" ]] && IS_APPLET=1
-readonly IS_APPLET
-declare -gA UI_VARS
-
+IS_APPLET=$([[ ${0##*/} != "$SELF" ]] && echo 1 || echo 0)
 APP_DESC="Description of the application ${SELF}."
 
 init_ui() {
     [[ ! -t 1 && -z $FORCE_COLOR ]] && return
     local line pair key val ansi_header=$'\e['
+    declare -gA UI_VARS
     while read -r line; do
         [[ $line == "# @off"* ]] && return
         [[ $line == "# @ui "* ]] && for pair in ${line#\# @ui }; do
             key="${pair%%=*}" val="${pair#*=}"
-            declare -gr "${key}=${ansi_header}${val}"
+            declare -g "${key}=${ansi_header}${val}"
             UI_VARS["$key"]="${ansi_header}${val}"
         done
     done < "$SELF_PATH"
-    declare -grA UI_VARS
 }
 
 get_funcs() {
