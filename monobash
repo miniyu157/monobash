@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# @ui COFF=0m BOLD=1m ULINE=4m GRAY=38;5;243m
+# @ui COFF=0m BOLD=1m FAINT=2m ITALIC=3m ULINE=4m INVERT=7m HIDE=8m DLINE=9m
 # @off
 
 SELF_PATH=$(realpath "${BASH_SOURCE[0]}")
