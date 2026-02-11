@@ -6,22 +6,18 @@ A minimalist, single-file Bash framework featuring self-documenting magic and Bu
 ![ShellCheck](https://img.shields.io/badge/shellcheck-pass-brightgreen?logo=gnu-bash&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
+## Features
+
+🧩 zero-dependency  📄 single-file  📦 multicall  
+🎨 ANSI-DSL  🪄 self-documenting  ⚡  auto-dispatch  🪶 <200 LOC
+
 Witness the monobash magic in motion.
 
 ![demo](./demo/demo.gif)
 
-## ✨ Features
+## Quick Start
 
-* **Zero Dependency**: Runs anywhere with just Bash.
-* **Multicall Binary**: Acts like BusyBox. One script, multiple commands via symlinks.
-* **Self-Documenting**: Parses subcommand documentation directly from comments via an Awk magic state machine.
-* **Declarative UI**: Define ANSI colors and styles via simple header tags.
-* **Auto-Dispatch**: Just write a  **__func**, and it automatically dispatches subcommands.
-* **Ultra Lightweight**: The core framework is under **200** lines of code.
-
-## ⚡ Quick Start
-
-### 🐣 For Beginners (Demo)
+### For Beginners (Demo)
 
 Witness the framework assemble itself. Download the self-bootstrapping script that dynamically fetches the latest core and fuses it with demo features at runtime.
 
@@ -32,7 +28,7 @@ chmod +x demo.sh
 ./demo.sh --help # 2nd run: Explore available commands
 ```
 
-### 🛠️ For Developers (Production)
+### For Developers (Production)
 
 Start your new project with the clean core framework:
 
@@ -42,12 +38,10 @@ chmod +x my-tool
 # Edit 'my-tool' to add your own functions!
 ```
 
-## 📖 Usage
+## Usage
 
 ```console
 > ./monobash --help
-Description of the application monobash.
-
 Usage:
   monobash COMMAND [options...]
   COMMAND [options...]
@@ -62,23 +56,29 @@ When using monobash directly as COMMAND:
     -l, --list         List all available commands
     -L, --link [DIR]   Create symlinks in DIR
                (default: directory of monobash)
-
-Available commands:
-    build deploy test (Example commands)
 ```
 
-## 💻 Development
+## Development
 
-### 1. Define Commands
+### 1. Define commands
 
-Create a function with a `__` prefix. It automatically becomes a subcommand.
+Functions prefixed with `__` become subcommands.
 
-> [!NOTE]
-> **Note**: For internal subcommand orchestration, prefer `run_cmd <command> [args...]` over calling `__func` directly. This ensures the `CMD` and `args` contexts are correctly synchronized for help generation and argument handling.
+> When calling another subcommand, always use  
+> `run_cmd <command> [args...]`  
+> so that `CMD` and `args` are updated correctly.
 
 ### 2. Write Documentation
 
 Add a `# $$$` comment block. It is parsed at runtime to generate help text.
+
+**Variable Expansion**: Inside the doc block, the following variables are expanded at runtime:
+
+* `${CMD}`: Current subcommand name.
+* `${SELF}`: Script filename.
+* `${SELF_PATH}`: Absolute path to the script.
+* `${SELF_DIR}`: Directory containing the script.
+* `${VAR}`: Any variable defined in # @ui tags.
 
 ### 3. Configure UI
 
@@ -87,6 +87,24 @@ Define global ANSI styles using `# @ui` tags at the top of the script.
 The `\e[` escape sequence is automatically prepended.
 
 Use `# @off` to stop scanning early and avoid unnecessary overhead.
+
+monobash provides the following preset styles:
+
+```bash
+# @ui COFF=0m BOLD=1m FAINT=2m ITALIC=3m 
+# @ui ULINE=4m INVERT=7m HIDE=8m DLINE=9m
+```
+
+Of course, you can add more styles, for example:
+
+```bash
+# @ui RED=31m     GREEN=32m     YELLOW=33m     BLUE=34m     MAGENTA=35m     CYAN=36m     WHITE=37m
+# @ui bgRED=41m   bgGREEN=42m   bgYELLOW=43m   bgBLUE=44m   bgMAGENTA=45m   bgCYAN=46m   bgWHITE=47m
+# @ui LRED=91m    LGREEN=92m    LYELLOW=93m    LBLUE=94m    LMAGENTA=95m    LCYAN=96m    LWHITE=37m
+# @ui bgLRED=101m bgLGREEN=102m bgLYELLOW=103m bgLBLUE=104m bgLMAGENTA=105m bgLCYAN=106m bgLWHITE=107m
+# @ui FOFF=39m BOFF=49m
+# @ui SAKURA=1;4;38;2;255;176;191;48;2;96;48;72m
+```
 
 **Example:**
 
@@ -114,21 +132,15 @@ __deploy() {
 }
 ```
 
-**Variable Expansion**: Inside the doc block, the following variables are expanded at runtime:
+### 4. Additional Variables
 
-* `${CMD}`: Current subcommand name.
-* `${SELF}`: Script filename.
-* `${SELF_PATH}`: Absolute path to the script.
-* `${SELF_DIR}`: Directory containing the script.
-* `${VAR}`: Any variable defined in # @ui tags.
-
-**Additional Variables**: You can access these globals anywhere in your functions:
+You can access these globals anywhere in your functions:
 
 * `IS_APPLET`: 1 if run via symlink 0 otherwise.
-* `UI_VARS`: An associative array containing all parsed @ui styles (e.g., ${UI_VARS[FOO]} ${!UI_VARS[*]}).
+* `UI_VARS`: An associative array containing all parsed @ui styles (e.g., `${UI_VARS[FOO]}` `${!UI_VARS[*]}`).
 * `CMD`: The name of the currently executing subcommand.
 * `args`: An array containing the arguments passed to the subcommand (e.g., `${args[@]}`).
 
-## ⚖️ License
+## License
 
 [MIT LICENSE](./LICENSE)
