@@ -35,20 +35,14 @@ create_link() {
     local -a funcs
     local symlink_dir="${1:-$SELF_DIR}"
     mapfile -t funcs < <(get_funcs)
-
-    [[ -x $SELF_PATH ]] || {
-        printf "%s: executable not found: %s\n" "$SELF" "$SELF_PATH" >&2
-        return 1
-    }
     [[ -z ${funcs[0]} ]] && {
         printf "%s: no commands available.\n" "$SELF" >&2
         return 1
     }
     local status=0 cmd
     for cmd in "${funcs[@]}"; do
-        [[ -z $cmd ]] && continue
         local symlink_path="$symlink_dir/$cmd"
-        [[ -L $symlink_path && -e $symlink_path ]] || {
+        [[ $symlink_path -ef $SELF_PATH ]] || {
             if ln -sf "$SELF_PATH" "$symlink_path"; then
                 printf "Created symlink: %s\n" "$symlink_path"
             else
