@@ -82,12 +82,11 @@ END { exit (state == 2 ? 0 : 1) }
 }
 
 usage_subcmd() {
-    local cmd="${1:-$CMD}"
-    local desc
-    if ! desc=$(extract_func_doc "$cmd"); then
+    local cmd="${1:-$CMD}" desc
+    desc=$(extract_func_doc "$cmd") || {
         printf "%s: no help available for '%s'\n" "$SELF" "$cmd" >&2
         return 1
-    fi
+    }
     printf "%s\n" "$desc"
 }
 
