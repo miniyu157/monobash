@@ -133,7 +133,7 @@ run_cmd() {
 
 main() {
     init_ui
-    if [[ ${0##*/} == "$SELF" ]]; then
+    if ((!IS_APPLET)); then
         local CMD="$1"
         shift
         case "${CMD}" in
