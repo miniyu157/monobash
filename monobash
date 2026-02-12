@@ -23,23 +23,20 @@ init_ui() {
 }
 
 get_funcs() {
-    local -a funcs=()
-    local f
-    while read -r f; do
-        funcs+=("${f#__}")
-    done < <(compgen -A function -- __)
-    printf "%s\n" "${funcs[@]}"
+    local -n _ref=${1:-_null}
+    mapfile -t _ref < <(compgen -A function -- __)
+    _ref=("${_ref[@]#__}")
+    [[ -z $1 ]] && ((${#_ref[@]})) && printf "%s\n" "${_ref[@]}"
 }
 
 create_link() {
     local -a funcs
-    local symlink_dir="${1:-$SELF_DIR}"
-    mapfile -t funcs < <(get_funcs)
-    [[ -z ${funcs[0]} ]] && {
+    get_funcs funcs
+    (("${#funcs[@]}")) || {
         printf "%s: no commands available.\n" "$SELF" >&2
         return 1
     }
-    local status=0 cmd
+    local symlink_dir="${1:-$SELF_DIR}" status=0 cmd
     for cmd in "${funcs[@]}"; do
         local symlink_path="$symlink_dir/$cmd"
         [[ $symlink_path -ef $SELF_PATH ]] || {
@@ -96,8 +93,7 @@ usage_subcmd() {
 
 usage_main() {
     local -a funcs
-    mapfile -t funcs < <(get_funcs)
-
+    get_funcs funcs
     cat << EOF
 ${BOLD}${APP_DESC}${COFF}
 
@@ -145,7 +141,7 @@ main() {
             -h | --help) usage_main 0 ;;
             -l | --list)
                 get_funcs
-                exit $?
+                exit 0
                 ;;
             -L | --link)
                 create_link "$@"
