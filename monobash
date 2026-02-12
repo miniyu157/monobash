@@ -29,28 +29,6 @@ get_funcs() {
     [[ -z $1 ]] && ((${#_ref[@]})) && printf "%s\n" "${_ref[@]}"
 }
 
-create_link() {
-    local -a funcs
-    get_funcs funcs
-    (("${#funcs[@]}")) || {
-        printf "%s: no commands available.\n" "$SELF" >&2
-        return 1
-    }
-    local symlink_dir="${1:-$SELF_DIR}" status=0 cmd
-    for cmd in "${funcs[@]}"; do
-        local symlink_path="$symlink_dir/$cmd"
-        [[ $symlink_path -ef $SELF_PATH ]] || {
-            if ln -sf "$SELF_PATH" "$symlink_path"; then
-                printf "Created symlink: %s\n" "$symlink_path"
-            else
-                printf "Failed to create symlink: %s\n" "$symlink_path" >&2
-                status=1
-            fi
-        }
-    done
-    return $status
-}
-
 extract_func_doc() {
     local -x CMD="$1" func_name="__${1}"
     local vars=("CMD" "SELF" "SELF_PATH" "SELF_DIR")
@@ -108,8 +86,6 @@ ${BOLD}${ULINE}When using ${SELF} directly as COMMAND:${COFF}
   Options:
     -h, --help         Show this help message
     -l, --list         List all available commands
-    -L, --link [DIR]   Create symlinks in DIR
-               (default: directory of ${SELF})
 
 ${BOLD}${ULINE}Available commands:${COFF}
     ${funcs[*]:-  (No commands available)}
@@ -141,10 +117,6 @@ main() {
             -l | --list)
                 get_funcs
                 exit 0
-                ;;
-            -L | --link)
-                create_link "$@"
-                exit $?
                 ;;
         esac
     else
