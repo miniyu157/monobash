@@ -68,27 +68,48 @@ usage_subcmd() {
     printf "%s\n" "$desc"
 }
 
+extract_summary() {
+    while IFS= read -r line; do
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
+        [[ -z $line ]] && continue
+        [[ $line =~ ^(Usage|Options|Commands|Args|Arguments): ]] && continue
+        [[ $line =~ ^[-=_.]{3,}$ ]] && continue
+        printf '%s\n' "$line"
+        return
+    done
+    return 1
+}
+
 usage_main() {
-    local -a funcs
-    get_funcs funcs
     cat << EOF
 ${BOLD}${APP_DESC}${COFF}
 
-${BOLD}${ULINE}Usage:${COFF}
+${ULINE}Usage:${COFF}
   ${SELF} COMMAND [options...]
   COMMAND [options...]
 
-${BOLD}${ULINE}Options:${COFF}
-  -h, --help         Show help information for the specified command
+${ULINE}Commands:${COFF}
+$(
+        funcs=()
+        get_funcs funcs
+        ((${#funcs[@]})) || {
+            printf "  (No commands available)\n"
+            return
+        }
+        max=0
+        for cmd in "${funcs[@]}"; do
+            ((${#cmd} > max)) && max=${#cmd}
+        done
+        for func in "${funcs[@]}"; do
+            summary=$(extract_func_doc "$func" | extract_summary)
+            printf "  %-*s   %s\n" "$max" "$func" "${summary:-${FAINT}...${COFF}}"
+        done
+    )
 
-${BOLD}${ULINE}When using ${SELF} directly as COMMAND:${COFF}
-  Usage: ${SELF} <options> [arguments...]
-  Options:
-    -h, --help         Show this help message
-    -l, --list         List all available commands
-
-${BOLD}${ULINE}Available commands:${COFF}
-    ${funcs[*]:-  (No commands available)}
+${ULINE}Options:${COFF}
+  -h, --help    Show help message
+  -l, --list    List all available commands
 EOF
     exit "${1:-0}"
 }
