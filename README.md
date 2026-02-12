@@ -9,7 +9,7 @@ A minimalist, single-file Bash framework featuring self-documenting magic and Bu
 ## Features
 
 🧩 zero-dependency  📄 single-file  📦 multicall  
-🎨 ANSI-DSL  🪄 self-documenting  ⚡  auto-dispatch  🪶 <200 LOC
+🎨 ANSI-DSL  🪄 self-documenting  ⚡  auto-dispatch  🪶 <150 LOC
 
 Witness the monobash magic in motion.
 
