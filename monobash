@@ -36,25 +36,17 @@ extract_func_doc() {
     (
         export "${export_vars[@]}"
         awk -v target="$func_name" -v var_list="${export_vars[*]}" '
-BEGIN { n = split(var_list, keys, " "); state = 0; doc_buffer = "" }
-/^# ?\$\$\$/ {
-    if (state == 0) { state = 1; doc_buffer = ""; next }
-    if (state == 1) { state = 2; next }}
-state == 1 { sub(/^#[[:space:]]?/, ""); doc_buffer = doc_buffer $0 "\n" }
-$0 ~ "^[[:space:]]*" target "([[:space:]]*\\(|[[:space:]]+)" {
-    if (state == 2) {
-        for (i = 1; i <= n; i++) {
-            key = keys[i];val = ENVIRON[key]
-            if (key == "" || val == "") continue
-            gsub("\\$\\{" key "\\}", val, doc_buffer)
-            gsub("\\$" key, val, doc_buffer)
-        }
-        printf "%s", doc_buffer; exit 0
-    }
-    state = 0
-}
-state == 2 && !/^[[:space:]]*$/ && !($0 ~ "^#") { state = 0 }
-END { exit (state == 2 ? 0 : 1) }
+/^##/ { sub(/^## ?/, ""); buf = buf ? buf "\n" $0 : $0; next }
+$0 ~ "^" target "[ \t]*\\(\\)" {
+  if (buf) { n = split(var_list, vars, " ")
+    for (i = 1; i <= n; i++) {
+      v = vars[i]; if (v in ENVIRON) {
+        val = ENVIRON[v]; gsub(/&/, "\\\\&", val)
+        gsub("\\$\\{" v "\\}", val, buf)
+        gsub("\\$" v "\\>", val, buf)
+      } } print buf; found = 1 } exit }
+{ buf = "" }
+END { if (!found) exit 1 }
         ' "$SELF_PATH"
     )
 }
