@@ -2,7 +2,7 @@
 
 # demo.sh
 
-set -e
+set -euo pipefail
 
 URL_BASE="https://raw.githubusercontent.com/miniyu157/monobash/main"
 
@@ -30,18 +30,22 @@ core=$(curl -fsSL "$URL_BASE/monobash")
 printf "Fetching demo/demo.patch from github.com/miniyu157/monobash ...\n"
 patch=$(curl -fsSL "$URL_BASE/demo/demo.patch.sh")
 
-last_line=$(tail -n 1 <<< "$core")
-tmp_file="$SELF_DIR/_tmp_demo_$RANDOM.sh"
+tmp_file=$(mktemp "$SELF_DIR/_tmp_demo_XXXXXX.sh")
+trap '[[ -f "$tmp_file" ]] && rm -f "$tmp_file"' EXIT
+
+patch_ui=$(grep '^# @ui' <<< "$patch" || true)
+patch_code=$(grep -v "^# @ui" <<< "$patch" || true)
+off_line=$(grep -n "^# @off" <<< "$core" | cut -d: -f1 | head -1)
+
 {
-    head -n -1 <<< "$core"
-    printf "\n"
-    printf "%s\n" "$patch"
-    printf "\n"
-    printf '%s\n' "$last_line"
+    head -n "$((off_line - 1))" <<< "$core"
+    [[ -n $patch_ui ]] && printf '%s\n' "$patch_ui"
+    tail -n "+$off_line" <<< "$core" | head -n -1
+    printf '\n%s\n' "$patch_code"
+    tail -n 1 <<< "$core"
 } > "$tmp_file"
 
-printf "\n"
-printf "Welcome to MonoBash!\n"
+printf "\nWelcome to MonoBash!\n"
 printf "The demo is ready. Re-run './%s' to see it in action.\n" "$SELF"
 printf "You can also open this file in an editor to see how it works.\n"
 
