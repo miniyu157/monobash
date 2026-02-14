@@ -2,9 +2,11 @@
 
 A minimalist, single-file Bash framework featuring self-documenting magic and BusyBox-style multicall architecture.
 
-![Shell](https://img.shields.io/badge/Shell-Bash-4EAA25?style=flat-square&logo=gnubash)
-![ShellCheck](https://img.shields.io/badge/ShellCheck-pass-2ecc71?style=flat-square&logo=bash&logoColor=white)  
+![Shell](https://img.shields.io/badge/Shell-Bash%204.3-4EAA25?style=flat-square&logo=gnubash)
+![ShellCheck](https://img.shields.io/badge/ShellCheck-pass-2ecc71?style=flat-square&logo=gnubash&logoColor=white)  
 ![GitHub last commit](https://img.shields.io/github/last-commit/miniyu157/monobash?style=flat-square&logo=github&logoColor=white)
+![GitHub repo size](https://img.shields.io/github/repo-size/miniyu157/monobash?style=flat-square&color=8e44ad&label=%F0%9F%93%84%20repo%20size)
+![GitHub stars](https://img.shields.io/github/stars/miniyu157/monobash?style=flat-square&color=f1c40f&label=%E2%9C%A8%20Stars)  
 [![License](https://img.shields.io/badge/License-MIT-3498db?style=flat-square&logo=open-source-initiative&logoColor=white)](./LICENSE)
 
 ## Features
