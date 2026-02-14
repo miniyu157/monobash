@@ -44,7 +44,9 @@ $0 ~ "^" target "[ \t]*\\(\\)" {
         val = ENVIRON[v]; gsub(/&/, "\\\\&", val)
         gsub("\\$\\{" v "\\}", val, buf)
         gsub("\\$" v "\\>", val, buf)
-      } } print buf; found = 1 } exit }
+    } }
+  gsub(/\$\{[A-Za-z_][A-Za-z0-9_]*\}|\$[A-Za-z_][A-Za-z0-9_]*/, "", buf)
+  print buf; found = 1 } exit }
 { buf = "" }
 END { if (!found) exit 1 }
         ' "$SELF_PATH"
