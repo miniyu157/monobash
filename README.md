@@ -2,16 +2,17 @@
 
 A minimalist, single-file Bash framework featuring self-documenting magic and BusyBox-style multicall architecture.
 
-![GitHub last commit](https://img.shields.io/github/last-commit/miniyu157/monobash?logo=git)
-![ShellCheck](https://img.shields.io/badge/shellcheck-pass-brightgreen?logo=gnu-bash&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Shell](https://img.shields.io/badge/Shell-Bash-4EAA25?style=flat-square&logo=gnubash)
+![ShellCheck](https://img.shields.io/badge/ShellCheck-pass-2ecc71?style=flat-square&logo=bash&logoColor=white)  
+![GitHub last commit](https://img.shields.io/github/last-commit/miniyu157/monobash?style=flat-square&logo=github&logoColor=white)
+[![License](https://img.shields.io/badge/License-MIT-3498db?style=flat-square&logo=open-source-initiative&logoColor=white)](./LICENSE)
 
 ## Features
 
 🧩 zero-dependency  📄 single-file  📦 multicall  
-🎨 ANSI-DSL  🪄 self-documenting  ⚡  auto-dispatch  🪶 <150 LOC
+🎨 ANSI-DSL  🪄 self-documenting  ⚡  auto-dispatch
 
-Witness the monobash magic in motion.
+***Witness the monobash magic in motion. 🪄***
 
 ![demo](./demo/demo.gif)
 
@@ -38,6 +39,18 @@ chmod +x my-tool
 # Edit 'my-tool' to add your own functions!
 ```
 
+## Multicall Architecture (Applets)
+
+monobash natively supports BusyBox-style symlink execution. When invoked via a symlink, the framework automatically dispatches to the corresponding internal command.
+
+```bash
+# Create a symlink to monobash
+ln -s ./my-tool server
+
+# This is equivalent to running `./my-tool server`
+./server --port 8080
+```
+
 ## Usage
 
 ```console
@@ -46,98 +59,94 @@ Usage:
   monobash COMMAND [options...]
   COMMAND [options...]
 
-Options:
-  -h, --help         Show help information for the specified command
+Commands:
+  foo       Do something awesome
+  bar       Another cool command
 
-When using monobash directly as COMMAND:
-  Usage: monobash <options> [arguments...]
-  Options:
-    -h, --help         Show this help message
-    -l, --list         List all available commands
-    -L, --link [DIR]   Create symlinks in DIR
-               (default: directory of monobash)
+Options:
+  -h, --help    Show help message
+  -l, --list    List all available commands
 ```
 
-## Development
+## Development Guide
 
-### 1. Define commands
+### 1. Define Commands
 
-Functions prefixed with `__` become subcommands.
+Any function prefixed with `__` automatically becomes an exposed CLI subcommand.
 
+```bash
+__build() {
+    echo "Building project..."
+}
+```
+
+> [!NOTE]
 > For internal calls, directly invoke `__<command> "$@"`.
 > Only use `run_cmd <command> "$@"` when you explicitly need to update the global `CMD` context.
 
-### 2. Write Documentation
+### 2. Self-Documenting Comments
 
-Add a `# $$$` comment block. It is parsed at runtime to generate help text.
+Documentation is extracted directly from the source using internal `awk` magic. Prefix your docstrings with `##` right above your function.
 
-**Variable Expansion**: Inside the doc block, the following variables are expanded at runtime:
+**Variable Expansion**: Variables within the `##` blocks are expanded at runtime.
+Available variables:
 
 * `${CMD}`: Current subcommand name.
 * `${SELF}`: Script filename.
 * `${SELF_PATH}`: Absolute path to the script.
 * `${SELF_DIR}`: Directory containing the script.
-* `${VAR}`: Any variable defined in # @ui tags.
-
-### 3. Configure UI
-
-Define global ANSI styles using `# @ui` tags at the top of the script.
-
-The `\e[` escape sequence is automatically prepended.
-
-Use `# @off` to stop scanning early and avoid unnecessary overhead.
-
-monobash provides the following preset styles:
+* Any variable defined via `# @ui` tags.
 
 ```bash
-# @ui COFF=0m BOLD=1m FAINT=2m ITALIC=3m 
-# @ui ULINE=4m INVERT=7m HIDE=8m DLINE=9m
-```
-
-Of course, you can add more styles, for example:
-
-```bash
-# @ui RED=31m     GREEN=32m     YELLOW=33m     BLUE=34m     MAGENTA=35m     CYAN=36m     WHITE=37m
-# @ui bgRED=41m   bgGREEN=42m   bgYELLOW=43m   bgBLUE=44m   bgMAGENTA=45m   bgCYAN=46m   bgWHITE=47m
-# @ui LRED=91m    LGREEN=92m    LYELLOW=93m    LBLUE=94m    LMAGENTA=95m    LCYAN=96m    LWHITE=37m
-# @ui bgLRED=101m bgLGREEN=102m bgLYELLOW=103m bgLBLUE=104m bgLMAGENTA=105m bgLCYAN=106m bgLWHITE=107m
-# @ui FOFF=39m BOFF=49m
-# @ui SAKURA=1;4;38;2;255;176;191;48;2;96;48;72m
-```
-
-**Example:**
-
-```bash
-#!/usr/bin/env bash
-# @ui ERROR=31;1m SUCCESS=32;1m foo=bar
-# @ui RESET=0m
-# @off
-
-# ... (The Core of monobash) ...
-
-# $$$
-# Deploy the application to production.
-#
-# Usage:
-#   ${CMD} [options]
-#
-# Options:
-#   -f, --force      Force deployment
-#
-# returns: ${SUCCESS}0${COFF} on success, ${ERROR}1${COFF} on error.
-# $$$
-__deploy() {
-    echo "Deploying..."
+## Compile the source code.
+##
+## Usage:
+##   ${CMD} [options]
+##
+## Options:
+##   -v, --verbose    Enable verbose output
+__compile() {
+    # implementation...
 }
 ```
 
-### 4. Additional Variables
+### 3. UI and Styling (ANSI-DSL)
 
-You can access these globals anywhere in your functions:
+Define global ANSI styles using `# @ui` tags at the top of the script. The framework prepends the `\e[` escape sequence automatically.
 
-* `IS_APPLET`: 1 if run via symlink 0 otherwise.
-* `UI_VARS`: An associative array containing all parsed @ui styles (e.g., `${UI_VARS[FOO]}` `${!UI_VARS[*]}`).
-* `CMD`: The name of the currently executing subcommand.
+Use `# @off` to terminate the parser early and avoid unnecessary overhead.
+
+monobash includes these core styles:
+
+```bash
+# @ui COFF=0m BOLD=1m FAINT=2m ITALIC=3m ULINE=4m INVERT=7m HIDE=8m DLINE=9m
+# @off
+```
+
+You can easily declare custom color palettes:
+
+```bash
+# @ui RED=31m GREEN=32m YELLOW=33m BLUE=34m 
+# @ui ERROR=31;1m SUCCESS=32;1m
+```
+
+**Applying styles in code and docs:**
+
+```bash
+## Deploy to production.
+## Returns ${SUCCESS}0${COFF} on success, ${ERROR}1${COFF} on error.
+__deploy() {
+    echo -e "${BOLD}Deploying...${COFF}"
+}
+```
+
+### 4. Global Context
+
+The following global variables are available anywhere inside your functions:
+
+* `IS_APPLET`: `1` if executed via symlink, `0` otherwise.
+* `CMD`: The name of the currently executing subcommand (without the `__` prefix).
+* `UI_VARS`: An associative array containing all parsed `@ui` styles (e.g., `${UI_VARS[BOLD]}`).
 
 ## License
 
