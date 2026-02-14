@@ -2,7 +2,7 @@
 
 # demo.sh
 
-set -euo pipefail
+set -e
 
 URL_BASE="https://raw.githubusercontent.com/miniyu157/monobash/main"
 
