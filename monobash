@@ -105,12 +105,12 @@ ${ULINE}Options:${COFF}
   -h, --help    Show help message
   -l, --list    List all available commands
 EOF
-    exit "${1:-0}"
+    (($1)) && exit "${2:-0}"
 }
 
 run_cmd() {
     local CMD="$1"
-    shift 1
+    shift
     declare -F -- "__${CMD}" > /dev/null || {
         printf "%s: unsupported command: '%s'\n" "$SELF" "$CMD" >&2
         return 1
@@ -128,7 +128,7 @@ main() {
         local CMD="$1"
         shift
         case "${CMD}" in
-            -h | --help) usage_main 0 ;;
+            -h | --help) usage_main 1 ;;
             -l | --list)
                 get_funcs
                 exit 0
@@ -137,7 +137,7 @@ main() {
     else
         local CMD="${0##*/}"
     fi
-    [[ -z $CMD ]] && usage_main 0
+    [[ -z $CMD ]] && usage_main 1
     run_cmd "$CMD" "$@"
 }
 
